@@ -1,0 +1,13 @@
+includes:
+  - ./../vendor/phpstan/phpstan-phpunit/extension.neon
+  - ./../vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+  phpVersion: 80200 # PHP 8.2 - Current minimal version supported
+  level: 0
+  paths:
+    - ./../src
+    - ./../tests
+
+  bootstrapFiles:
+    - ./../vendor/autoload.php
