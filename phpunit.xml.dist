@@ -14,18 +14,7 @@
         failOnIncomplete="true"
         failOnRisky="true"
         failOnWarning="true"
-        processIsolation="false"
-        stopOnError="false"
-        stopOnFailure="false"
-        stopOnIncomplete="false"
-        stopOnSkipped="false"
-        stopOnRisky="false"
-        timeoutForSmallTests="1"
-        timeoutForMediumTests="10"
-        timeoutForLargeTests="60"
-        cacheDirectory="build/.phpunit.cache"
-        backupStaticProperties="false"
-        requireCoverageMetadata="false">
+        cacheDirectory="build/.phpunit.cache">
   <php>
     <ini name="error_reporting" value="E_ALL"/>
   </php>

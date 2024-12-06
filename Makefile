@@ -12,7 +12,6 @@ validate:
 
 install:
 	$(call header,Composer Install)
-	@${COMPOSER_BIN} global require maglnet/composer-require-checker
 	@${COMPOSER_BIN} install
 
 update:
@@ -23,8 +22,7 @@ update:
 composer.lock: install
 
 #~ Vendor binaries dependencies
-vendor/bin/phpcbf:
-vendor/bin/phpcs:
+vendor/bin/php-cs-fixer:
 vendor/bin/phpstan:
 vendor/bin/phpunit:
 vendor/bin/phpcov:
@@ -40,25 +38,25 @@ build/reports/phpstan:
 	@mkdir -p build/reports/phpstan
 
 #~ main commands
-deps: composer.json
+deps: composer.json # jenkins + manual
 	$(call header,Checking Dependencies)
-	@XDEBUG_MODE=off composer-require-checker check
+	@XDEBUG_MODE=off ./vendor/bin/composer-dependency-analyser --config ./ci/composer-dependency-analyser.php # for shadow, unused required dependencies and ext-* missing dependencies
 
-phpcs: vendor/bin/phpcs build/reports/phpcs
+phpcs: vendor/bin/php-cs-fixer build/reports/phpcs # jenkins + manual
 	$(call header,Checking Code Style)
-	@./vendor/bin/php-cs-fixer check
+	@./vendor/bin/php-cs-fixer check -v --diff
 
-phpcbf: vendor/bin/phpcbf
+phpcbf: vendor/bin/php-cs-fixer # manual
 	$(call header,Fixing Code Style)
 	@./vendor/bin/php-cs-fixer fix -v
 
-php81compatibility: vendor/bin/phpstan build/reports/phpstan
-	$(call header,Checking PHP 8.1 compatibility)
-	@XDEBUG_MODE=off ./vendor/bin/phpstan analyse --configuration=./ci/php81-compatibility.neon --error-format=checkstyle > ./build/reports/phpstan/php81-compatibility.xml
-
-php83compatibility: vendor/bin/phpstan build/reports/phpstan
+php-min-compatibility: vendor/bin/phpstan build/reports/phpstan
 	$(call header,Checking PHP 8.3 compatibility)
-	@XDEBUG_MODE=off ./vendor/bin/phpstan analyse --configuration=./ci/php83-compatibility.neon --error-format=checkstyle > ./build/reports/phpstan/php83-compatibility.xml
+	@XDEBUG_MODE=off ./vendor/bin/phpstan analyse --configuration=./ci/php-min-compatibility.neon --error-format=checkstyle > ./build/reports/phpstan/php-min-compatibility.xml
+
+php-max-compatibility: vendor/bin/phpstan build/reports/phpstan
+	$(call header,Checking PHP 8.4 compatibility)
+	@XDEBUG_MODE=off ./vendor/bin/phpstan analyse --configuration=./ci/php-max-compatibility.neon --error-format=checkstyle > ./build/reports/phpstan/php-max-compatibility.xml
 
 phpstan: vendor/bin/phpstan build/reports/phpstan
 	$(call header,Running Static Analyze)
@@ -96,4 +94,4 @@ build:
 run:
 	$(call header,Run Docker image)
 	docker run --name adventofcode -t adventofcode:2023
-ci: clean validate deps install phpcs tests integration php81compatibility php83compatibility analyze
+ci: clean validate deps install phpcs tests integration php-min-compatibility php-max-compatibility analyze
